@@ -1,0 +1,917 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Choose‑Your‑Adventure Date</title>
+    <style>
+      :root {
+        --bgTop: #eff6ff;
+        --bgMid: #e0f2fe;
+        --bgBot: #f0f9ff;
+
+        --card: rgba(255, 255, 255, 0.86);
+        --text: #0f172a;
+        --muted: rgba(71, 85, 105, 0.95);
+        --ring: rgba(59, 130, 246, 0.18);
+        --ring2: rgba(14, 165, 233, 0.22);
+
+        --btnA: #3b82f6;
+        --btnB: #0ea5e9;
+
+        --good: #16a34a;
+        --warn: #f59e0b;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(6px) scale(0.985);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0) scale(1);
+        }
+      }
+
+      @keyframes bounceIn {
+        0% {
+          opacity: 0;
+          transform: scale(0.92);
+        }
+        55% {
+          opacity: 1;
+          transform: scale(1.02);
+        }
+        100% {
+          opacity: 1;
+          transform: scale(1);
+        }
+      }
+
+      @keyframes float {
+        0%,
+        100% {
+          transform: translateY(0);
+        }
+        50% {
+          transform: translateY(-8px);
+        }
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial,
+          "Apple Color Emoji", "Segoe UI Emoji";
+        background: linear-gradient(
+          180deg,
+          var(--bgTop) 0%,
+          var(--bgMid) 55%,
+          var(--bgBot) 100%
+        );
+        color: var(--text);
+        min-height: 100dvh;
+        overflow-x: hidden;
+      }
+
+      body::before,
+      body::after {
+        content: "";
+        position: fixed;
+        width: 520px;
+        height: 520px;
+        border-radius: 9999px;
+        filter: blur(28px);
+        opacity: 0.45;
+        z-index: -1;
+      }
+
+      body::before {
+        top: -220px;
+        left: -180px;
+        background: radial-gradient(
+          circle at 30% 30%,
+          rgba(59, 130, 246, 0.55),
+          rgba(167, 139, 250, 0.18)
+        );
+      }
+
+      body::after {
+        bottom: -240px;
+        right: -190px;
+        background: radial-gradient(
+          circle at 40% 40%,
+          rgba(14, 165, 233, 0.55),
+          rgba(236, 72, 153, 0.16)
+        );
+      }
+
+      .wrap {
+        max-width: 620px;
+        margin: 0 auto;
+        padding: 18px 14px 28px;
+      }
+
+      .card {
+        background: var(--card);
+        border: 2px solid var(--ring);
+        border-radius: 22px;
+        padding: 16px;
+        backdrop-filter: blur(8px);
+        box-shadow: 0 18px 40px rgba(2, 6, 23, 0.08),
+          0 2px 10px rgba(2, 6, 23, 0.05);
+        animation: fadeIn 320ms ease-out;
+      }
+
+      .hero {
+        border: 2px dashed var(--ring2);
+        border-radius: 18px;
+        background: rgba(255, 255, 255, 0.6);
+        padding: 12px;
+        margin-bottom: 14px;
+      }
+
+      .hero-title {
+        font-weight: 900;
+        font-size: 18px;
+        margin-bottom: 6px;
+        letter-spacing: 0.2px;
+      }
+
+      h1 {
+        font-size: 20px;
+        margin: 0 0 8px;
+        letter-spacing: 0.2px;
+      }
+
+      p {
+        margin: 0 0 14px;
+        color: var(--muted);
+        font-size: 14px;
+        line-height: 1.5;
+      }
+
+      .row {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      .badge {
+        display: inline-block;
+        font-size: 12px;
+        padding: 6px 10px;
+        border-radius: 999px;
+        border: 1px solid var(--ring);
+        background: rgba(219, 234, 254, 0.55);
+        color: rgba(30, 64, 175, 0.95);
+      }
+
+      .btn-row {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 10px;
+        margin-top: 14px;
+      }
+
+      button {
+        appearance: none;
+        border: 1px solid var(--ring);
+        background: linear-gradient(90deg, var(--btnA), var(--btnB));
+        color: white;
+        padding: 12px 14px;
+        border-radius: 999px;
+        font-weight: 800;
+        font-size: 15px;
+        letter-spacing: 0.2px;
+        transition: transform 180ms ease, box-shadow 180ms ease, filter 180ms ease;
+      }
+
+      button:hover {
+        transform: translateY(-1px) scale(1.01);
+        box-shadow: 0 18px 30px rgba(2, 6, 23, 0.12);
+        filter: saturate(1.06);
+      }
+
+      button.secondary {
+        background: rgba(255, 255, 255, 0.75);
+        color: var(--text);
+      }
+
+      button:disabled {
+        opacity: 0.55;
+      }
+
+      .grid {
+        display: grid;
+        gap: 10px;
+      }
+
+      .choice {
+        border: 1px solid var(--ring);
+        background: rgba(255, 255, 255, 0.7);
+        color: var(--text);
+        padding: 12px 12px;
+        border-radius: 16px;
+        text-align: left;
+        font-size: 14px;
+        line-height: 1.35;
+        font-weight: 700;
+      }
+
+      .choice small {
+        display: block;
+        font-weight: 600;
+        opacity: 0.8;
+        margin-top: 4px;
+      }
+
+      .choice[aria-pressed="true"] {
+        outline: 2px solid rgba(59, 130, 246, 0.7);
+        background: rgba(59, 130, 246, 0.14);
+      }
+
+      .choice:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 10px 22px rgba(2, 6, 23, 0.06);
+      }
+
+      .result {
+        border: 1px solid var(--ring);
+        background: rgba(255, 255, 255, 0.68);
+        border-radius: 18px;
+        padding: 12px;
+        margin-top: 12px;
+      }
+
+      .result .big {
+        font-size: 18px;
+        font-weight: 900;
+        margin-bottom: 4px;
+      }
+
+      .result .small {
+        font-size: 13px;
+        color: var(--muted);
+        line-height: 1.45;
+      }
+
+      .gif {
+        width: 100%;
+        max-height: 280px;
+        object-fit: contain;
+        border-radius: 18px;
+        box-shadow: 0 18px 40px rgba(2, 6, 23, 0.1);
+        margin-bottom: 10px;
+        animation: float 2.4s ease-in-out infinite;
+      }
+
+      .gif-placeholder {
+        width: 100%;
+        height: 220px;
+        border-radius: 18px;
+        border: 2px dashed var(--ring2);
+        background: rgba(255, 255, 255, 0.6);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 12px;
+        color: rgba(30, 64, 175, 0.9);
+        font-weight: 900;
+        margin-bottom: 10px;
+      }
+
+      .footer {
+        margin-top: 12px;
+        text-align: center;
+        font-size: 12px;
+        color: rgba(71, 85, 105, 0.85);
+      }
+
+      ::-webkit-scrollbar {
+        width: 8px;
+      }
+
+      ::-webkit-scrollbar-track {
+        background: #e0f2fe;
+      }
+
+      ::-webkit-scrollbar-thumb {
+        background: #3b82f6;
+        border-radius: 4px;
+      }
+
+      ::-webkit-scrollbar-thumb:hover {
+        background: #2563eb;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="wrap">
+      <div class="card">
+        <div id="screen"></div>
+      </div>
+      <div class="footer">Suspense mode: ON</div>
+    </div>
+
+    <script>
+      const GIFS = {
+        intro: "https://media.tenor.com/nHdROKQ4cOUAAAAj/hello-kenny-sebastian.gif",
+        pickup: "https://media1.tenor.com/m/4LvAD8hD5tcAAAAd/charlie-day.gif",
+        lunch: "https://media1.tenor.com/m/pGl6IzyCBlQAAAAd/kalyanaraman-salim-kumar.gif",
+        energy: "https://media1.tenor.com/m/Li6RNzfPtyUAAAAd/devan-devg.gif",
+        lock: "https://media1.tenor.com/m/IxgvEfej00kAAAAd/laugh-happy.gif",
+        revealLunch: "https://media1.tenor.com/m/kgCz2ana6C4AAAAd/jayaram-comedy.gif",
+        revealStop1: "https://media1.tenor.com/m/XCM4I0-KR94AAAAd/excited-malayalam.gif",
+        revealStop2: "https://media1.tenor.com/m/m4BE-epom_oAAAAd/done-prithviraj.gif",
+        final: "https://media1.tenor.com/m/oKlqGFeYiT4AAAAd/hbd-fahadh-faasil-fahadh-faasil.gif",
+      };
+
+      const PICKUP_POINT = "Nizampet";
+
+      const LUNCH_VIBES = [
+        { id: "andhra", label: "Andhra", note: "spicy + satisfying" },
+        { id: "kerala", label: "Kerala", note: "comfort + flavour" },
+        { id: "cafe", label: "Cafe", note: "cute + chill" },
+        { id: "biryani", label: "Biryani", note: "classic Hyderabad" },
+        { id: "youd", label: "You decide", note: "I trust you" },
+      ];
+
+      const ENERGY = [
+        { id: "chill", label: "Chill", note: "minimal walking, max vibes" },
+        { id: "mid", label: "Medium", note: "balanced + explore" },
+        { id: "full", label: "Full send", note: "let’s gooo" },
+      ];
+
+      // Place pool (excluding Charminar as requested)
+      // timeHintHours is an approximate on-site duration.
+      const PLACES = [
+        {
+          id: "golconda",
+          name: "Golconda Fort",
+          best: "day",
+          timeHintHours: 3,
+          energy: 2,
+          note: "iconic + views",
+        },
+        {
+          id: "cablebridge",
+          name: "Cable Bridge (night) + speed boat + park walk",
+          best: "night",
+          timeHintHours: 2.5,
+          energy: 2,
+          note: "night lights + chill walk",
+        },
+        {
+          id: "ramoji",
+          name: "Ramoji Film City",
+          best: "day",
+          timeHintHours: 7,
+          energy: 3,
+          note: "mega day plan",
+        },
+        {
+          id: "wonderla",
+          name: "Wonderla",
+          best: "day",
+          timeHintHours: 6,
+          energy: 3,
+          note: "rides + full energy",
+        },
+        {
+          id: "ikea",
+          name: "IKEA exploration",
+          best: "either",
+          timeHintHours: 2.5,
+          energy: 1,
+          note: "fun browsing + snacks",
+        },
+        {
+          id: "salarjung",
+          name: "Salar Jung Museum",
+          best: "day",
+          timeHintHours: 2.5,
+          energy: 1,
+          note: "cool + peaceful",
+        },
+        {
+          id: "birla",
+          name: "Birla Mandir + Necklace Road",
+          best: "night",
+          timeHintHours: 2.5,
+          energy: 1,
+          note: "sunset + lake drive",
+        },
+        {
+          id: "shilparamam",
+          name: "Shilparamam (Hitech City)",
+          best: "either",
+          timeHintHours: 2,
+          energy: 1,
+          note: "artsy + snacks",
+        },
+        {
+          id: "durgam",
+          name: "Durgam Cheruvu",
+          best: "night",
+          timeHintHours: 2,
+          energy: 1,
+          note: "lake + bridge vibe",
+        },
+        {
+          id: "kbr",
+          name: "KBR Park walk",
+          best: "either",
+          timeHintHours: 1.5,
+          energy: 1,
+          note: "calm + fresh air",
+        },
+        {
+          id: "tankbund",
+          name: "Tank Bund / Hussain Sagar loop",
+          best: "night",
+          timeHintHours: 2,
+          energy: 1,
+          note: "classic Hyderabad night drive",
+        },
+      ];
+
+      const state = {
+        screen: "intro", // intro | pickup | lunch | energy | lock | rLunch | r1 | r2 | final
+        pickupTime: null, // 14 or 15
+        lunchVibe: null,
+        energy: null,
+        plan: null, // computed once
+      };
+
+      const screenEl = document.getElementById("screen");
+
+      function escapeHtml(str) {
+        return String(str)
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;")
+          .replaceAll('"', "&quot;")
+          .replaceAll("'", "&#039;");
+      }
+
+      function fmtTime(minutesFromMidnight) {
+        const h24 = Math.floor(minutesFromMidnight / 60) % 24;
+        const m = minutesFromMidnight % 60;
+        const ampm = h24 >= 12 ? "PM" : "AM";
+        const h12 = h24 % 12 === 0 ? 12 : h24 % 12;
+        return `${h12}:${String(m).padStart(2, "0")} ${ampm}`;
+      }
+
+      function renderGif(key, label) {
+        const url = GIFS[key];
+        if (url && url.trim()) {
+          return `<img class="gif" src="${escapeHtml(url)}" alt="${escapeHtml(label)}" />`;
+        }
+        return `<div class="gif-placeholder">GIF placeholder<br/><span style="font-weight:800; opacity:.8;">(${escapeHtml(label)})</span></div>`;
+      }
+
+      function pickRandom(arr) {
+        return arr[Math.floor(Math.random() * arr.length)];
+      }
+
+      function buildPlan() {
+        // Simple constraints to ensure you can do lunch + 2 places and still drop ~11.
+        // We don’t use maps — we use safe time buffers.
+
+        const pickupMinutes = state.pickupTime === 14 ? 14 * 60 : 15 * 60;
+
+        const lunchDuration = 75; // 1h15
+        const driveBuffer = 45; // between blocks
+        const dropTarget = 23 * 60; // 11:00 PM
+
+        // Eligible places based on energy + pickup time.
+        let pool = [...PLACES];
+
+        // If pickup is 3 PM, avoid mega-day plans (ramoji, wonderla).
+        if (state.pickupTime === 15) {
+          pool = pool.filter((p) => !["ramoji"].includes(p.id));
+        }
+
+        // Energy filter.
+        if (state.energy === "chill") {
+          pool = pool.filter((p) => p.energy <= 2 && p.id !== "wonderla" && p.id !== "ramoji");
+        }
+        if (state.energy === "mid") {
+          pool = pool.filter((p) => p.id !== "ramoji");
+        }
+
+        // Keep Wonderla only for "full".
+        if (state.energy !== "full") {
+          pool = pool.filter((p) => p.id !== "wonderla");
+        }
+
+        // Stop 2 should be night-friendly.
+        const nightCandidates = pool.filter((p) => p.best === "night" || p.best === "either");
+        const dayCandidates = pool.filter((p) => p.best === "day" || p.best === "either");
+
+        // Prefer Cable Bridge for stop 2 sometimes (it’s a fun night reveal).
+        const wantCableBridge = nightCandidates.some((p) => p.id === "cablebridge") && Math.random() < 0.5;
+
+        let stop2 = wantCableBridge
+          ? nightCandidates.find((p) => p.id === "cablebridge")
+          : pickRandom(nightCandidates);
+
+        // Stop 1 cannot be the same.
+        let stop1Pool = dayCandidates.filter((p) => p.id !== stop2.id);
+
+        // If stop2 is a short night drive, we can pick a bigger stop1. If stop2 is big (rare), pick small stop1.
+        if (stop2.timeHintHours >= 3.5) {
+          stop1Pool = stop1Pool.filter((p) => p.timeHintHours <= 3);
+        }
+
+        // If pickup is 3 PM, avoid long stop1.
+        if (state.pickupTime === 15) {
+          stop1Pool = stop1Pool.filter((p) => p.timeHintHours <= 3);
+        }
+
+        // If full energy + pickup 2 PM, allow Wonderla as stop1 (not stop2).
+        if (state.energy === "full" && state.pickupTime === 14) {
+          if (pool.some((p) => p.id === "wonderla") && Math.random() < 0.35) {
+            const wonderla = pool.find((p) => p.id === "wonderla");
+            // Pair Wonderla with short night stop.
+            const shortNight = nightCandidates
+              .filter((p) => p.id !== "wonderla" && p.timeHintHours <= 2.5)
+              .filter((p) => p.id !== "golconda" && p.id !== "salarjung");
+            if (shortNight.length) {
+              stop1Pool = [wonderla];
+              stop2 = pickRandom(shortNight);
+            }
+          }
+        }
+
+        const stop1 = pickRandom(stop1Pool);
+
+        // Build a rough timeline.
+        // pickup -> drive to lunch -> lunch -> drive -> stop1 -> drive -> stop2 -> drive -> drop
+        let t = pickupMinutes;
+        const timeline = [];
+
+        timeline.push({ label: `Pickup from ${PICKUP_POINT}`, start: t, end: t + 15 });
+        t += 30; // initial drive / settle
+        timeline.push({ label: `Lunch (${state.lunchVibeLabel})`, start: t, end: t + lunchDuration });
+        t += lunchDuration + driveBuffer;
+
+        const stop1Minutes = Math.round(stop1.timeHintHours * 60);
+        timeline.push({ label: stop1.name, start: t, end: t + stop1Minutes });
+        t += stop1Minutes + driveBuffer;
+
+        const stop2Minutes = Math.round(stop2.timeHintHours * 60);
+        timeline.push({ label: stop2.name, start: t, end: t + stop2Minutes });
+        t += stop2Minutes + 45;
+
+        // If we end too early, add a chill buffer (tea/drive) so drop can be ~11-ish.
+        if (t < dropTarget - 30) {
+          timeline.push({ label: "Chill drive / tea break", start: t, end: Math.min(dropTarget - 15, t + (dropTarget - t - 15)) });
+          t = timeline[timeline.length - 1].end + 15;
+        }
+
+        timeline.push({ label: `Drop off`, start: Math.min(t, dropTarget), end: Math.min(t, dropTarget) + 5 });
+
+        return {
+          pickupTime: state.pickupTime,
+          lunchVibe: state.lunchVibe,
+          energy: state.energy,
+          stop1,
+          stop2,
+          timeline,
+        };
+      }
+
+      function render() {
+        if (state.screen === "intro") return renderIntro();
+        if (state.screen === "pickup") return renderPickup();
+        if (state.screen === "lunch") return renderLunch();
+        if (state.screen === "energy") return renderEnergy();
+        if (state.screen === "lock") return renderLock();
+        if (state.screen === "rLunch") return renderRevealLunch();
+        if (state.screen === "r1") return renderReveal1();
+        if (state.screen === "r2") return renderReveal2();
+        if (state.screen === "final") return renderFinal();
+      }
+
+      function renderIntro() {
+        screenEl.innerHTML = `
+          ${renderGif("intro", "Intro")}
+          <div class="hero">
+            <div class="hero-title">Choose‑Your‑Adventure Date</div>
+            <div class="row">
+              <span class="badge">Next Saturday</span>
+              <span class="badge">Pickup: ${escapeHtml(PICKUP_POINT)}</span>
+            </div>
+          </div>
+          <h1>Rules</h1>
+          <p>
+            Ithan game, You pick just 3 things. I handle the suspense.
+            Lunch + 2 places + drop.
+          </p>
+          <div class="btn-row">
+            <button id="start">Start</button>
+          </div>
+        `;
+        document.getElementById("start").addEventListener("click", () => {
+          state.screen = "pickup";
+          render();
+        });
+      }
+
+      function renderPickup() {
+        screenEl.innerHTML = `
+          ${renderGif("pickup", "Pickup time")}
+          <h1>Pick-up time</h1>
+          <p>Choose one. No take-backs 😌</p>
+          <div class="grid" id="choices"></div>
+          <div class="btn-row">
+            <button class="secondary" id="back">Back</button>
+            <button id="next" disabled>Next</button>
+          </div>
+        `;
+
+        const choices = [
+          { id: 14, label: "2:00 PM", note: "more daylight = more options" },
+          { id: 15, label: "3:00 PM", note: "more chill = more night vibes" },
+        ];
+
+        let selected = null;
+        const choicesEl = document.getElementById("choices");
+        for (const c of choices) {
+          const btn = document.createElement("button");
+          btn.className = "choice";
+          btn.type = "button";
+          btn.setAttribute("aria-pressed", "false");
+          btn.innerHTML = `${escapeHtml(c.label)}<small>${escapeHtml(c.note)}</small>`;
+          btn.addEventListener("click", () => {
+            selected = c.id;
+            for (const child of choicesEl.children) child.setAttribute("aria-pressed", "false");
+            btn.setAttribute("aria-pressed", "true");
+            document.getElementById("next").disabled = false;
+          });
+          choicesEl.appendChild(btn);
+        }
+
+        document.getElementById("back").addEventListener("click", () => {
+          state.screen = "intro";
+          render();
+        });
+
+        document.getElementById("next").addEventListener("click", () => {
+          state.pickupTime = selected;
+          state.screen = "lunch";
+          render();
+        });
+      }
+
+      function renderLunch() {
+        screenEl.innerHTML = `
+          ${renderGif("lunch", "Lunch")}
+          <h1>Lunch vibe</h1>
+          <p>Choose your mood.</p>
+          <div class="grid" id="choices"></div>
+          <div class="btn-row">
+            <button class="secondary" id="back">Back</button>
+            <button id="next" disabled>Next</button>
+          </div>
+        `;
+
+        let selected = null;
+        const choicesEl = document.getElementById("choices");
+        for (const v of LUNCH_VIBES) {
+          const btn = document.createElement("button");
+          btn.className = "choice";
+          btn.type = "button";
+          btn.setAttribute("aria-pressed", "false");
+          btn.innerHTML = `${escapeHtml(v.label)}<small>${escapeHtml(v.note)}</small>`;
+          btn.addEventListener("click", () => {
+            selected = v;
+            for (const child of choicesEl.children) child.setAttribute("aria-pressed", "false");
+            btn.setAttribute("aria-pressed", "true");
+            document.getElementById("next").disabled = false;
+          });
+          choicesEl.appendChild(btn);
+        }
+
+        document.getElementById("back").addEventListener("click", () => {
+          state.screen = "pickup";
+          render();
+        });
+
+        document.getElementById("next").addEventListener("click", () => {
+          state.lunchVibe = selected.id;
+          state.lunchVibeLabel = selected.label;
+          state.screen = "energy";
+          render();
+        });
+      }
+
+      function renderEnergy() {
+        screenEl.innerHTML = `
+          ${renderGif("energy", "Energy")}
+          <h1>Energy level</h1>
+          <p>This decides how wild the plan gets 👀</p>
+          <div class="grid" id="choices"></div>
+          <div class="btn-row">
+            <button class="secondary" id="back">Back</button>
+            <button id="lock" disabled>Lock it in</button>
+          </div>
+        `;
+
+        let selected = null;
+        const choicesEl = document.getElementById("choices");
+        for (const e of ENERGY) {
+          const btn = document.createElement("button");
+          btn.className = "choice";
+          btn.type = "button";
+          btn.setAttribute("aria-pressed", "false");
+          btn.innerHTML = `${escapeHtml(e.label)}<small>${escapeHtml(e.note)}</small>`;
+          btn.addEventListener("click", () => {
+            selected = e.id;
+            for (const child of choicesEl.children) child.setAttribute("aria-pressed", "false");
+            btn.setAttribute("aria-pressed", "true");
+            document.getElementById("lock").disabled = false;
+          });
+          choicesEl.appendChild(btn);
+        }
+
+        document.getElementById("back").addEventListener("click", () => {
+          state.screen = "lunch";
+          render();
+        });
+
+        document.getElementById("lock").addEventListener("click", () => {
+          state.energy = selected;
+          state.plan = buildPlan();
+          state.screen = "lock";
+          render();
+        });
+      }
+
+      function renderLock() {
+        screenEl.innerHTML = `
+          ${renderGif("lock", "Locked")}
+          <div class="hero">
+            <div class="hero-title">Plan locked 🔒</div>
+            <div class="row">
+              <span class="badge">Pickup: ${state.pickupTime === 14 ? "2 PM" : "3 PM"}</span>
+              <span class="badge">Lunch: ${escapeHtml(state.lunchVibeLabel)}</span>
+              <span class="badge">Energy: ${escapeHtml(state.energy)}</span>
+            </div>
+          </div>
+          <h1>No spoilers</h1>
+          <p>Ready to unlock the first reveal?</p>
+          <div class="btn-row">
+            <button id="unlock">Unlock reveal 1</button>
+            <button class="secondary" id="restart">Start over</button>
+          </div>
+        `;
+
+        document.getElementById("unlock").addEventListener("click", () => {
+          state.screen = "rLunch";
+          render();
+        });
+
+        document.getElementById("restart").addEventListener("click", () => {
+          state.pickupTime = null;
+          state.lunchVibe = null;
+          state.lunchVibeLabel = null;
+          state.energy = null;
+          state.plan = null;
+          state.screen = "intro";
+          render();
+        });
+      }
+
+      function renderRevealLunch() {
+        screenEl.innerHTML = `
+          ${renderGif("revealLunch", "Lunch reveal")}
+          <h1>Reveal #1: Lunch</h1>
+          <div class="result" style="animation: bounceIn 260ms ease-out;">
+            <div class="big">Lunch vibe: ${escapeHtml(state.lunchVibeLabel)}</div>
+            <div class="small">(Details will be revealed… at pickup 😌)</div>
+          </div>
+          <div class="btn-row">
+            <button id="next">Unlock reveal 2</button>
+            <button class="secondary" id="back">Go back</button>
+          </div>
+        `;
+
+        document.getElementById("next").addEventListener("click", () => {
+          state.screen = "r1";
+          render();
+        });
+
+        document.getElementById("back").addEventListener("click", () => {
+          state.screen = "lock";
+          render();
+        });
+      }
+
+      function renderReveal1() {
+        screenEl.innerHTML = `
+          ${renderGif("revealStop1", "Stop 1")}
+          <h1>Reveal #2: Stop #1</h1>
+          <div class="result" style="animation: bounceIn 260ms ease-out;">
+            <div class="big">${escapeHtml(state.plan.stop1.name)}</div>
+            <div class="small">${escapeHtml(state.plan.stop1.note)} · ~${state.plan.stop1.timeHintHours}h</div>
+          </div>
+          <div class="btn-row">
+            <button id="next">Unlock reveal 3</button>
+            <button class="secondary" id="back">Go back</button>
+          </div>
+        `;
+
+        document.getElementById("next").addEventListener("click", () => {
+          state.screen = "r2";
+          render();
+        });
+
+        document.getElementById("back").addEventListener("click", () => {
+          state.screen = "rLunch";
+          render();
+        });
+      }
+
+      function renderReveal2() {
+        screenEl.innerHTML = `
+          ${renderGif("revealStop2", "Stop 2")}
+          <h1>Reveal #3: Stop #2</h1>
+          <div class="result" style="animation: bounceIn 260ms ease-out;">
+            <div class="big">${escapeHtml(state.plan.stop2.name)}</div>
+            <div class="small">${escapeHtml(state.plan.stop2.note)} · ~${state.plan.stop2.timeHintHours}h</div>
+          </div>
+          <div class="btn-row">
+            <button id="final">Final reveal</button>
+            <button class="secondary" id="back">Go back</button>
+          </div>
+        `;
+
+        document.getElementById("final").addEventListener("click", () => {
+          state.screen = "final";
+          render();
+        });
+
+        document.getElementById("back").addEventListener("click", () => {
+          state.screen = "r1";
+          render();
+        });
+      }
+
+      function renderFinal() {
+        const timelineRows = state.plan.timeline
+          .map(
+            (item) =>
+              `<div class="row" style="justify-content: space-between; padding: 6px 0;">
+                <span style="font-weight:900;">${escapeHtml(item.label)}</span>
+                <span class="badge">${fmtTime(item.start)} → ${fmtTime(item.end)}</span>
+              </div>`
+          )
+          .join("");
+
+        screenEl.innerHTML = `
+          ${renderGif("final", "Final")}
+          <h1>Final reveal: The whole route</h1>
+          <p>Engane ind plan huhh!?</p>
+          <div class="result">
+            <div class="big">Itinerary</div>
+            <div class="small">Pickup from ${escapeHtml(PICKUP_POINT)} · Lunch · 2 places · Drop</div>
+            <div style="margin-top: 6px;">${timelineRows}</div>
+          </div>
+          <div class="btn-row">
+            <button id="restart">Play again (new suspense)</button>
+            <button class="secondary" id="back">Go back</button>
+          </div>
+        `;
+
+        document.getElementById("restart").addEventListener("click", () => {
+          // Keep inputs? We'll restart fully to keep it simple.
+          state.pickupTime = null;
+          state.lunchVibe = null;
+          state.lunchVibeLabel = null;
+          state.energy = null;
+          state.plan = null;
+          state.screen = "intro";
+          render();
+        });
+
+        document.getElementById("back").addEventListener("click", () => {
+          state.screen = "r2";
+          render();
+        });
+      }
+
+      render();
+    </script>
+  </body>
+</html>
